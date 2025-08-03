@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>SmartBudget</title>
+<style>
+    :root {
+        --primary: #1e90ff;
+        --secondary: #ff6f61;
+        --accent: #ffd700;
+        --bg: #181a20;
+        --surface: #23262f;
+        --text: #f1f1f1;
+        --input-bg: #23262f;
+        --input-border: #33364a;
+        --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Segoe UI', Arial, sans-serif;
+        min-height: 100vh;
+        width: 100vw;
+        overflow-x: hidden;
+    }
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        animation: fadeIn 1.2s cubic-bezier(.77,0,.18,1) both;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.97) translateY(30px);}
+        to { opacity: 1; transform: scale(1) translateY(0);}
+    }
+    .app-title {
+        font-size: 2.3rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        margin-bottom: 2.2rem;
+        margin-top: 0.5rem;
+        background: linear-gradient(90deg, var(--primary) 30%, var(--accent) 70%, var(--secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-fill-color: transparent;
+        text-align: center;
+        text-shadow: 0 4px 24px rgba(30,144,255,0.18), 0 2px 8px rgba(255,215,0,0.10);
+        transition: letter-spacing 0.3s, text-shadow 0.3s;
+        user-select: none;
+        cursor: pointer;
+    }
+    .app-title:hover {
+        letter-spacing: 0.13em;
+        text-shadow: 0 8px 32px rgba(255,215,0,0.18), 0 2px 8px rgba(30,144,255,0.18);
+        filter: brightness(1.12) drop-shadow(0 0 10px var(--primary));
+        transform: scale(1.04) rotate(-1deg);
+    }
+    #budget-form {
+        background: linear-gradient(135deg, var(--surface) 80%, var(--primary) 100%);
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow);
+        padding: 2.5rem 2rem 2rem 2rem;
+        width: 100%;
+        max-width: 370px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        transition: box-shadow 0.3s;
+        border: 2px solid transparent;
+    }
+    #budget-form:hover, #budget-form:focus-within {
+        box-shadow: 0 12px 40px 0 rgba(30,144,255,0.25), var(--shadow);
+        border-color: var(--primary);
+        transition: box-shadow 0.3s, border-color 0.3s;
+    }
+    label {
+        font-size: 1.05rem;
+        color: var(--accent);
+        letter-spacing: 0.03em;
+        margin-bottom: 0.2rem;
+        transition: color 0.2s;
+    }
+    label:hover {
+        color: var(--secondary);
+        cursor: pointer;
+    }
+    input[type="number"], select {
+        background: var(--input-bg);
+        color: var(--text);
+        border: 1.5px solid var(--input-border);
+        border-radius: 0.7rem;
+        padding: 0.7rem 1rem;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        box-shadow: 0 2px 8px 0 rgba(30,144,255,0.08);
+    }
+    input[type="number"]:focus, select:focus {
+        border-color: var(--primary);
+        background: #232e3a;
+        box-shadow: 0 0 0 2px var(--primary);
+    }
+    input[type="number"]:hover, select:hover {
+        border-color: var(--secondary);
+        background: #232e3a;
+    }
+    select option {
+        background: var(--surface);
+        color: var(--text);
+    }
+    button[type="submit"] {
+        margin-top: 0.5rem;
+        background: linear-gradient(90deg, var(--primary) 60%, var(--secondary) 100%);
+        color: var(--text);
+        border: none;
+        border-radius: 1rem;
+        padding: 0.9rem 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        box-shadow: 0 4px 16px 0 rgba(255,215,0,0.10);
+        transition: background 0.25s, transform 0.18s, box-shadow 0.18s;
+    }
+    button[type="submit"]:hover, button[type="submit"]:focus {
+        background: linear-gradient(90deg, var(--secondary) 60%, var(--primary) 100%);
+        color: var(--accent);
+        transform: translateY(-2px) scale(1.03) rotate(-1deg);
+        box-shadow: 0 8px 32px 0 rgba(255,215,0,0.18);
+    }
+    input[type="number"]:hover, select:hover, button[type="submit"]:hover {
+        filter: brightness(1.08);
+    }
+    input[type="number"]:active, select:active {
+        filter: brightness(0.98);
+    }
+    /* Extra hover effect for form fields */
+    input[type="number"]:hover, select:hover {
+        box-shadow: 0 0 0 2px var(--secondary);
+    }
+    /* Responsive */
+    @media (max-width: 500px) {
+        .app-title {
+            font-size: 1.5rem;
+        }
+        #budget-form {
+            padding: 1.2rem 0.6rem 1rem 0.6rem;
+            max-width: 98vw;
+        }
+    }
+    /* Budget breakdown styles */
+    #budget-result {
+        margin-top: 2.2rem;
+        background: linear-gradient(135deg, var(--surface) 80%, var(--secondary) 100%);
+        border-radius: 1.3rem;
+        box-shadow: var(--shadow);
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+        max-width: 370px;
+        width: 100%;
+        color: var(--text);
+        animation: fadeIn 0.8s cubic-bezier(.77,0,.18,1);
+        border: 2px solid var(--secondary);
+        display: none;
+    }
+    #budget-result h2 {
+        color: var(--accent);
+        margin-top: 0;
+        margin-bottom: 1.1rem;
+        font-size: 1.3rem;
+        letter-spacing: 0.03em;
+        text-align: center;
+    }
+    .breakdown-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.2rem 0;
+    }
+    .breakdown-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.7rem 0.5rem;
+        border-radius: 0.7rem;
+        margin-bottom: 0.5rem;
+        background: rgba(30,144,255,0.08);
+        transition: background 0.2s, transform 0.18s;
+        font-size: 1.07rem;
+    }
+    .breakdown-list li:hover {
+        background: rgba(255,215,0,0.13);
+        color: var(--accent);
+        transform: scale(1.03) translateX(3px);
+    }
+    .category {
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+    .amount {
+        font-weight: 600;
+    }
+    .tip {
+        margin-top: 0.7rem;
+        color: var(--primary);
+        background: rgba(30,144,255,0.07);
+        border-radius: 0.7rem;
+        padding: 0.7rem 1rem;
+        font-size: 1rem;
+        text-align: center;
+        transition: background 0.2s;
+    }
+    .tip:hover {
+        background: rgba(255,215,0,0.13);
+        color: var(--accent);
+    }
+</style>
+</head>
+<body>
+    <div class="app-title">Budget Buddy</div>
+    <form id="budget-form">
+        <label for="income">Monthly Income</label>
+        <input type="number" id="income" min="0" step="1" placeholder="e.g. 1200" required>
+
+        <label for="location">Location (optional)</label>
+        <select id="location">
+            <option value="">Select location</option>
+            <option value="us">United States</option>
+            <option value="uk">United Kingdom</option>
+            <option value="india">India</option>
+            <option value="other">Other</option>
+        </select>
+
+        <label for="currency">Currency</label>
+        <select id="currency">
+            <option value="USD">$ (USD)</option>
+            <option value="GBP">£ (GBP)</option>
+            <option value="INR">₹ (INR)</option>
+            <option value="EUR">€ (EUR)</option>
+            <option value="JPY">¥ (JPY)</option>
+        </select>
+
+        <button type="submit">Generate Budget</button>
+    </form>
+
+    <div id="budget-result"></div>
+
+<script>
+// Currency symbols
+const currencySymbols = {
+    USD: "$",
+    GBP: "£",
+    INR: "₹",
+    EUR: "€",
+    JPY: "¥"
+};
+
+// Motivational tips
+const tips = [
+    "Remember: Pay yourself first! Prioritize savings, even if it's small.",
+    "Track your spending weekly to stay on top of your goals.",
+    "Small changes add up. Cut one unnecessary expense this month.",
+    "Invest in yourself: learning and self-care are valuable!",
+    "Set a fun goal for your savings—motivation matters!"
+];
+
+// Budget breakdown percentages by location (default if not matched)
+const budgetPresets = {
+    us:    { rent: 0.35, groceries: 0.15, savings: 0.15, selfcare: 0.10, entertainment: 0.10 },
+    uk:    { rent: 0.33, groceries: 0.13, savings: 0.17, selfcare: 0.12, entertainment: 0.10 },
+    india: { rent: 0.25, groceries: 0.20, savings: 0.20, selfcare: 0.10, entertainment: 0.10 },
+    other: { rent: 0.30, groceries: 0.15, savings: 0.15, selfcare: 0.10, entertainment: 0.10 },
+    default: { rent: 0.30, groceries: 0.15, savings: 0.15, selfcare: 0.10, entertainment: 0.10 }
+};
+
+function getBudgetPreset(location) {
+    return budgetPresets[location] || budgetPresets.default;
+}
+
+function getCurrencySymbol(currency) {
+    return currencySymbols[currency] || "";
+}
+
+function getRandomTip() {
+    return tips[Math.floor(Math.random() * tips.length)];
+}
+
+// Auto-select currency based on location
+const locationSelect = document.getElementById("location");
+const currencySelect = document.getElementById("currency");
+locationSelect.addEventListener("change", function() {
+    const loc = locationSelect.value;
+    if (loc === "us") currencySelect.value = "USD";
+    else if (loc === "uk") currencySelect.value = "GBP";
+    else if (loc === "india") currencySelect.value = "INR";
+    else if (loc === "other") currencySelect.value = "USD";
+});
+
+document.getElementById("budget-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const income = parseFloat(document.getElementById("income").value);
+    const location = document.getElementById("location").value;
+    const currency = document.getElementById("currency").value;
+    const symbol = getCurrencySymbol(currency);
+
+    if (isNaN(income) || income <= 0) {
+        showResult(`<div class="tip">Please enter a valid monthly income.</div>`);
+        return;
+    }
+
+    const preset = getBudgetPreset(location);
+    const categories = [
+        { key: "rent", label: "Rent / Housing" },
+        { key: "groceries", label: "Groceries" },
+        { key: "savings", label: "Savings" },
+        { key: "selfcare", label: "Self-care" },
+        { key: "entertainment", label: "Entertainment" }
+    ];
+
+    let total = 0;
+    let breakdownHtml = `<ul class="breakdown-list">`;
+    categories.forEach(cat => {
+        const amount = Math.round(income * preset[cat.key]);
+        total += amount;
+        breakdownHtml += `<li><span class="category">${cat.label}</span><span class="amount">${symbol}${amount.toLocaleString()}</span></li>`;
+    });
+    // If rounding caused a mismatch, adjust savings
+    if (total !== income) {
+        const diff = income - total;
+        breakdownHtml = breakdownHtml.replace(
+            /(<span class="category">Savings<\/span><span class="amount">)([^<]+)(<\/span>)/,
+            function(match, p1, p2, p3) {
+                let amt = parseInt(p2.replace(/[^0-9]/g, "")) + diff;
+                return `${p1}${symbol}${amt.toLocaleString()}${p3}`;
+            }
+        );
+    }
+    breakdownHtml += `</ul>`;
+
+    const tip = getRandomTip();
+
+    showResult(`
+        <h2>Your Personalized Budget</h2>
+        ${breakdownHtml}
+        <div class="tip">${tip}</div>
+    `);
+});
+
+function showResult(html) {
+    const result = document.getElementById("budget-result");
+    result.innerHTML = html;
+    result.style.display = "block";
+    result.scrollIntoView({ behavior: "smooth" });
+}
+</script>
+</body>
+</html>
